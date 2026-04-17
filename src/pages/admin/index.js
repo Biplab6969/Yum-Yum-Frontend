@@ -5,6 +5,8 @@ import Shops from './Shops';
 import Reports from './Reports';
 import Users from './Users';
 import AuditLogs from './AuditLogs';
+import WholesaleUsers from './WholesaleUsers';
+import WholesaleUserLedger from './WholesaleUserLedger';
 
 export {
   Dashboard as AdminDashboard,
@@ -13,5 +15,7 @@ export {
   Shops,
   Reports,
   Users,
-  AuditLogs
+  AuditLogs,
+  WholesaleUsers,
+  WholesaleUserLedger
 };

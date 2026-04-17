@@ -115,4 +115,16 @@ export const reportAPI = {
   backup: () => api.get('/reports/backup', { responseType: 'blob' })
 };
 
+// Wholesale API
+export const wholesaleAPI = {
+  getUsers: () => api.get('/wholesale/users'),
+  createUser: (data) => api.post('/wholesale/users', data),
+  updateUser: (id, data) => api.put(`/wholesale/users/${id}`, data),
+  getUserLedger: (id, page = 1, limit = 25) =>
+    api.get(`/wholesale/users/${id}/ledger`, { params: { page, limit } }),
+  createSale: (id, data) => api.post(`/wholesale/users/${id}/sales`, data),
+  recordPayment: (id, data) => api.post(`/wholesale/users/${id}/payments`, data),
+  sendDailyReminders: () => api.post('/wholesale/reminders/send-daily')
+};
+
 export default api;

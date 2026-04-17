@@ -30,6 +30,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: '/admin/shops', icon: FiShoppingBag, label: 'Shop Monitoring' },
     { path: '/admin/reports', icon: FiPieChart, label: 'Reports' },
     { path: '/admin/users', icon: FiUsers, label: 'User Management' },
+    { path: '/admin/wholesale-users', icon: FiDollarSign, label: 'Wholesale Users' },
     { path: '/admin/audit-logs', icon: FiFileText, label: 'Audit Logs' }
   ];
 

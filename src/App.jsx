@@ -12,7 +12,9 @@ import {
   Shops,
   Reports,
   Users,
-  AuditLogs
+  AuditLogs,
+  WholesaleUsers,
+  WholesaleUserLedger
 } from './pages/admin';
 
 // Seller Pages
@@ -45,11 +47,14 @@ function App() {
           }
         >
           <Route index element={<AdminDashboard />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="production" element={<Production />} />
           <Route path="items" element={<Items />} />
           <Route path="shops" element={<Shops />} />
           <Route path="reports" element={<Reports />} />
           <Route path="users" element={<Users />} />
+          <Route path="wholesale-users" element={<WholesaleUsers />} />
+          <Route path="wholesale-users/:id" element={<WholesaleUserLedger />} />
           <Route path="audit-logs" element={<AuditLogs />} />
         </Route>
 
@@ -63,6 +68,7 @@ function App() {
           }
         >
           <Route index element={<SellerDashboard />} />
+          <Route path="dashboard" element={<SellerDashboard />} />
           <Route path="transactions" element={<SellerTransactions />} />
         </Route>
 

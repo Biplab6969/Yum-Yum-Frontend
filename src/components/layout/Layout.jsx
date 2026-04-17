@@ -11,6 +11,10 @@ const Layout = () => {
   // Get page title from path
   const getPageTitle = () => {
     const path = location.pathname;
+    if (path.startsWith('/admin/wholesale-users/')) {
+      return 'Wholesale Ledger';
+    }
+
     const titles = {
       '/admin/dashboard': 'Dashboard',
       '/admin/production': 'Daily Production',
@@ -18,6 +22,7 @@ const Layout = () => {
       '/admin/shops': 'Shop Monitoring',
       '/admin/reports': 'Reports & Analytics',
       '/admin/users': 'User Management',
+      '/admin/wholesale-users': 'Wholesale User Management',
       '/admin/audit-logs': 'Audit Logs',
       '/seller/dashboard': 'Dashboard',
       '/seller/transactions': 'Daily Sales'

@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   FiDollarSign, 
-  FiPackage, 
   FiTrendingUp, 
-  FiAlertTriangle,
   FiShoppingBag,
   FiCalendar
 } from 'react-icons/fi';
@@ -14,7 +12,7 @@ import { reportAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const AdminDashboard = () => {
-  const { lowStockAlerts, production, loading: dataLoading } = useData();
+  const { production, loading: dataLoading } = useData();
   const [dashboardData, setDashboardData] = useState(null);
   const [salesChartData, setSalesChartData] = useState(null);
   const [itemChartData, setItemChartData] = useState(null);
@@ -113,11 +111,12 @@ const AdminDashboard = () => {
   }
 
   const { today, monthly, yearly } = dashboardData || {};
+  const stockByItem = today?.stockByItem?.length ? today.stockByItem : production;
 
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard
           title="Today's Revenue"
           value={`₹${(today?.totalRevenue || 0).toLocaleString()}`}
@@ -139,38 +138,36 @@ const AdminDashboard = () => {
           color="purple"
           subtitle={`${yearly?.totalSales || 0} items sold`}
         />
-        <StatCard
-          title="Stock Remaining"
-          value={today?.remainingStock || 0}
-          icon={FiPackage}
-          color="yellow"
-          subtitle={`${today?.totalProduction || 0} produced today`}
-        />
       </div>
 
-      {/* Alerts */}
-      {lowStockAlerts.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <FiAlertTriangle className="w-5 h-5 text-red-600" />
-            <h3 className="font-semibold text-red-800">Low Stock Alerts ({lowStockAlerts.length})</h3>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {lowStockAlerts.map((alert, index) => (
-              <span 
-                key={index}
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  alert.status === 'OUT_OF_STOCK' 
-                    ? 'bg-red-100 text-red-700' 
-                    : 'bg-yellow-100 text-yellow-700'
+      {/* Stock Remaining by Item */}
+      <div className="card">
+        <div className="flex items-center gap-2 mb-4">
+          <FiShoppingBag className="w-5 h-5 text-secondary-600" />
+          <h3 className="text-lg font-semibold text-secondary-800">Stock Remaining by Item</h3>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          {stockByItem.map((item, index) => {
+            const remainingStock = item.remainingStock ?? item.currentAvailableStock ?? 0;
+            const isLowStock = item.isLowStock ?? false;
+
+            return (
+              <div
+                key={item.itemId || index}
+                className={`p-4 rounded-lg text-center border ${
+                  isLowStock ? 'bg-red-50 border-red-100' : 'bg-secondary-50 border-secondary-100'
                 }`}
               >
-                {alert.itemName}: {alert.currentStock} left
-              </span>
-            ))}
-          </div>
+                <p className="text-sm text-secondary-600 truncate">{item.itemName}</p>
+                <p className={`text-2xl font-bold mt-1 ${isLowStock ? 'text-red-600' : 'text-secondary-800'}`}>
+                  {remainingStock}
+                </p>
+                <p className="text-xs text-secondary-500 mt-1">items left</p>
+              </div>
+            );
+          })}
         </div>
-      )}
+      </div>
 
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -204,28 +201,6 @@ const AdminDashboard = () => {
         {shopChartData && <BarChart data={shopChartData} height={300} />}
       </div>
 
-      {/* Today's Summary */}
-      <div className="card">
-        <h3 className="text-lg font-semibold text-secondary-800 mb-4">Today's Production Summary</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
-          {production.map((item, index) => (
-            <div 
-              key={index}
-              className={`p-4 rounded-lg text-center ${
-                item.isLowStock ? 'bg-red-50' : 'bg-secondary-50'
-              }`}
-            >
-              <p className="text-sm text-secondary-600 truncate">{item.itemName}</p>
-              <p className={`text-2xl font-bold mt-1 ${
-                item.isLowStock ? 'text-red-600' : 'text-secondary-800'
-              }`}>
-                {item.currentAvailableStock}
-              </p>
-              <p className="text-xs text-secondary-500">of {item.productionQuantity}</p>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 };
