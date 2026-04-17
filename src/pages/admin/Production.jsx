@@ -1,28 +1,55 @@
-import { useState, useEffect } from 'react';
-import { FiPlus, FiSave, FiRefreshCw, FiPackage } from 'react-icons/fi';
+import { useEffect, useState } from 'react';
+import { FiSave, FiRefreshCw, FiPackage } from 'react-icons/fi';
 import { Loading } from '../../components/common';
 import { useData } from '../../context/DataContext';
 import { productionAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
+const formatDateInput = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const Production = () => {
   const { items, production, fetchProduction, loading } = useData();
   const [productionInputs, setProductionInputs] = useState({});
   const [saving, setSaving] = useState(false);
+  const [historyDate, setHistoryDate] = useState(formatDateInput());
+  const [historyRows, setHistoryRows] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const loadHistoryForDate = async (selectedDate) => {
+    setHistoryLoading(true);
+    try {
+      const response = await productionAPI.getByDate(selectedDate);
+      const rows = Array.isArray(response.data?.data) ? response.data.data : [];
+      setHistoryRows(rows);
+    } catch (error) {
+      setHistoryRows([]);
+      toast.error(error.response?.data?.message || 'Failed to load production history');
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Initialize inputs from production data
     const inputs = {};
-    production.forEach(p => {
+    production.forEach((p) => {
       inputs[p.itemId] = p.productionQuantity;
     });
     setProductionInputs(inputs);
   }, [production]);
 
+  useEffect(() => {
+    loadHistoryForDate(historyDate);
+  }, [historyDate]);
+
   const handleInputChange = (itemId, value) => {
-    setProductionInputs(prev => ({
+    setProductionInputs((prev) => ({
       ...prev,
-      [itemId]: parseInt(value) || 0
+      [itemId]: Number.parseInt(value, 10) || 0
     }));
   };
 
@@ -42,7 +69,7 @@ const Production = () => {
       }
 
       const response = await productionAPI.bulkAdd(productions);
-      
+
       if (response.data.success) {
         await fetchProduction();
         toast.success('Production data saved successfully');
@@ -56,13 +83,13 @@ const Production = () => {
 
   const handleSaveItem = async (itemId) => {
     const quantity = productionInputs[itemId] || 0;
-    
+
     try {
       await productionAPI.add({
         itemId,
         productionQuantity: quantity
       });
-      
+
       await fetchProduction();
       toast.success('Production updated');
     } catch (error) {
@@ -74,29 +101,29 @@ const Production = () => {
     return <Loading text="Loading production data..." />;
   }
 
+  const historyByItem = new Map(
+    historyRows.map((row) => [String(row.itemId?._id || row.itemId), row.productionQuantity || 0])
+  );
+
+  const itemHistoryList = items.map((item) => ({
+    itemId: item._id,
+    itemName: item.name,
+    quantity: historyByItem.get(item._id) || 0
+  }));
+
   return (
     <div className="space-y-6 animate-fadeIn">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-secondary-800">Daily Production Entry</h2>
-          <p className="text-secondary-500 mt-1">
-            Enter today's production quantities from the factory
-          </p>
+          <p className="text-secondary-500 mt-1">Enter today's production quantities from the factory</p>
         </div>
         <div className="flex gap-3">
-          <button
-            onClick={fetchProduction}
-            className="btn btn-secondary"
-          >
+          <button onClick={fetchProduction} className="btn btn-secondary" type="button">
             <FiRefreshCw className="w-4 h-4" />
             Refresh
           </button>
-          <button
-            onClick={handleSaveAll}
-            disabled={saving}
-            className="btn btn-primary"
-          >
+          <button onClick={handleSaveAll} disabled={saving} className="btn btn-primary" type="button">
             {saving ? (
               <>
                 <FiRefreshCw className="w-4 h-4 animate-spin" />
@@ -112,7 +139,6 @@ const Production = () => {
         </div>
       </div>
 
-      {/* Production Table */}
       <div className="card">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -128,7 +154,7 @@ const Production = () => {
             </thead>
             <tbody>
               {items.map((item) => {
-                const prodData = production.find(p => p.itemId === item._id);
+                const prodData = production.find((p) => p.itemId === item._id);
                 const currentStock = prodData?.currentAvailableStock || 0;
                 const isLowStock = currentStock <= item.lowStockThreshold;
                 const isOutOfStock = currentStock === 0;
@@ -142,14 +168,12 @@ const Production = () => {
                         </div>
                         <div>
                           <p className="font-medium text-secondary-800">{item.name}</p>
-                          <p className="text-sm text-secondary-500">
-                            Threshold: {item.lowStockThreshold}
-                          </p>
+                          <p className="text-sm text-secondary-500">Threshold: {item.lowStockThreshold}</p>
                         </div>
                       </div>
                     </td>
                     <td className="table-cell">
-                      <span className="font-semibold text-secondary-800">₹{item.price}</span>
+                      <span className="font-semibold text-secondary-800">Rs {item.price}</span>
                     </td>
                     <td className="table-cell">
                       <input
@@ -162,11 +186,11 @@ const Production = () => {
                       />
                     </td>
                     <td className="table-cell">
-                      <span className={`text-xl font-bold ${
-                        isOutOfStock ? 'text-red-600' : 
-                        isLowStock ? 'text-yellow-600' : 
-                        'text-green-600'
-                      }`}>
+                      <span
+                        className={`text-xl font-bold ${
+                          isOutOfStock ? 'text-red-600' : isLowStock ? 'text-yellow-600' : 'text-green-600'
+                        }`}
+                      >
                         {currentStock}
                       </span>
                     </td>
@@ -183,6 +207,7 @@ const Production = () => {
                       <button
                         onClick={() => handleSaveItem(item._id)}
                         className="text-primary-600 hover:text-primary-700 font-medium text-sm"
+                        type="button"
                       >
                         Update
                       </button>
@@ -195,32 +220,48 @@ const Production = () => {
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-green-50 rounded-xl p-4">
-          <p className="text-green-600 text-sm font-medium">In Stock</p>
-          <p className="text-2xl font-bold text-green-700 mt-1">
-            {production.filter(p => !p.isLowStock).length}
-          </p>
+      <div className="card">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-4">
+          <div>
+            <h3 className="text-xl font-semibold text-secondary-800">Production History</h3>
+            <p className="text-secondary-500 text-sm mt-1">Select a date to view item-wise production quantity</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <label htmlFor="history-date" className="text-sm text-secondary-600 font-medium">
+              Date
+            </label>
+            <input
+              id="history-date"
+              type="date"
+              value={historyDate}
+              onChange={(e) => setHistoryDate(e.target.value)}
+              className="px-3 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+          </div>
         </div>
-        <div className="bg-yellow-50 rounded-xl p-4">
-          <p className="text-yellow-600 text-sm font-medium">Low Stock</p>
-          <p className="text-2xl font-bold text-yellow-700 mt-1">
-            {production.filter(p => p.isLowStock && p.currentAvailableStock > 0).length}
-          </p>
-        </div>
-        <div className="bg-red-50 rounded-xl p-4">
-          <p className="text-red-600 text-sm font-medium">Out of Stock</p>
-          <p className="text-2xl font-bold text-red-700 mt-1">
-            {production.filter(p => p.currentAvailableStock === 0).length}
-          </p>
-        </div>
-        <div className="bg-blue-50 rounded-xl p-4">
-          <p className="text-blue-600 text-sm font-medium">Total Stock</p>
-          <p className="text-2xl font-bold text-blue-700 mt-1">
-            {production.reduce((sum, p) => sum + p.currentAvailableStock, 0)}
-          </p>
-        </div>
+
+        {historyLoading ? (
+          <p className="text-sm text-secondary-500 px-1 py-3">Loading history...</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr>
+                  <th className="table-header">Item Name</th>
+                  <th className="table-header">Produced Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {itemHistoryList.map((row) => (
+                  <tr key={row.itemId} className="hover:bg-secondary-50">
+                    <td className="table-cell font-medium text-secondary-800">{row.itemName}</td>
+                    <td className="table-cell text-secondary-900 font-semibold">{row.quantity}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -102,12 +102,12 @@ const Reports = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `report_${type}_${dateRange.startDate}_to_${dateRange.endDate}.csv`);
+      link.setAttribute('download', `report_${type}_${dateRange.startDate}_to_${dateRange.endDate}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
 
-      toast.success('Report exported successfully');
+      toast.success('Report PDF downloaded successfully');
     } catch (error) {
       toast.error('Failed to export report');
     } finally {
@@ -139,12 +139,12 @@ const Reports = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `backup_${new Date().toISOString().split('T')[0]}.json`);
+      link.setAttribute('download', `backup_${new Date().toISOString().split('T')[0]}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
 
-      toast.success('Backup created successfully');
+      toast.success('Backup PDF downloaded successfully');
     } catch (error) {
       toast.error('Failed to create backup');
     }
