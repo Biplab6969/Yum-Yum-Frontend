@@ -37,6 +37,7 @@ const defaultOptions = {
       labels: {
         usePointStyle: true,
         padding: 20,
+        color: '#111111',
         font: {
           family: 'Inter',
           size: 12
@@ -44,7 +45,9 @@ const defaultOptions = {
       }
     },
     tooltip: {
-      backgroundColor: '#1e293b',
+      backgroundColor: '#111111',
+      titleColor: '#ffffff',
+      bodyColor: '#ffffff',
       titleFont: {
         family: 'Inter',
         size: 13
@@ -68,12 +71,18 @@ export const LineChart = ({ data, options = {}, height = 300 }) => {
       x: {
         grid: {
           display: false
+        },
+        ticks: {
+          color: '#111111'
         }
       },
       y: {
         beginAtZero: true,
         grid: {
-          color: '#f1f5f9'
+          color: '#fff7c2'
+        },
+        ticks: {
+          color: '#111111'
         }
       }
     }
@@ -95,12 +104,18 @@ export const BarChart = ({ data, options = {}, height = 300 }) => {
       x: {
         grid: {
           display: false
+        },
+        ticks: {
+          color: '#111111'
         }
       },
       y: {
         beginAtZero: true,
         grid: {
-          color: '#f1f5f9'
+          color: '#fff7c2'
+        },
+        ticks: {
+          color: '#111111'
         }
       }
     }
@@ -144,9 +159,9 @@ export const DoughnutChart = ({ data, options = {}, height = 300 }) => {
 
 // Chart color palettes
 export const chartColors = {
-  primary: ['#f04438', '#f97066', '#fda29b', '#ffccc7', '#fee4e2'],
-  success: ['#22c55e', '#4ade80', '#86efac', '#bbf7d0', '#dcfce7'],
-  info: ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe'],
-  warning: ['#f59e0b', '#fbbf24', '#fcd34d', '#fde68a', '#fef3c7'],
-  mixed: ['#f04438', '#3b82f6', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6']
+  primary: ['#111111', '#facc15', '#fde047', '#fef08a', '#ffffff'],
+  success: ['#111111', '#facc15', '#fde047', '#fef08a', '#ffffff'],
+  info: ['#111111', '#facc15', '#fde047', '#fef08a', '#ffffff'],
+  warning: ['#111111', '#facc15', '#fde047', '#fef08a', '#ffffff'],
+  mixed: ['#111111', '#facc15', '#fde047', '#fef08a', '#ffffff', '#facc15', '#fde047']
 };

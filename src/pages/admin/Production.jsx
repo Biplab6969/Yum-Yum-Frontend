@@ -14,8 +14,8 @@ const formatDateInput = (date = new Date()) => {
 
 const Production = () => {
   const { items, production, fetchProduction, loading } = useData();
-  const [productionInputs, setProductionInputs] = useState({});
   const [saving, setSaving] = useState(false);
+  const [productionInputs, setProductionInputs] = useState({});
   const [historyDate, setHistoryDate] = useState(formatDateInput());
   const [historyRows, setHistoryRows] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -36,8 +36,8 @@ const Production = () => {
 
   useEffect(() => {
     const inputs = {};
-    production.forEach((p) => {
-      inputs[p.itemId] = p.productionQuantity;
+    production.forEach((entry) => {
+      inputs[entry.itemId] = entry.productionQuantity;
     });
     setProductionInputs(inputs);
   }, [production]);
@@ -57,11 +57,8 @@ const Production = () => {
     setSaving(true);
     try {
       const productions = Object.entries(productionInputs)
-        .filter(([_, quantity]) => quantity > 0)
-        .map(([itemId, productionQuantity]) => ({
-          itemId,
-          productionQuantity
-        }));
+        .filter(([, quantity]) => quantity > 0)
+        .map(([itemId, productionQuantity]) => ({ itemId, productionQuantity }));
 
       if (productions.length === 0) {
         toast.error('Please enter at least one production quantity');
@@ -69,7 +66,6 @@ const Production = () => {
       }
 
       const response = await productionAPI.bulkAdd(productions);
-
       if (response.data.success) {
         await fetchProduction();
         toast.success('Production data saved successfully');
@@ -85,11 +81,7 @@ const Production = () => {
     const quantity = productionInputs[itemId] || 0;
 
     try {
-      await productionAPI.add({
-        itemId,
-        productionQuantity: quantity
-      });
-
+      await productionAPI.add({ itemId, productionQuantity: quantity });
       await fetchProduction();
       toast.success('Production updated');
     } catch (error) {
@@ -113,37 +105,43 @@ const Production = () => {
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-secondary-800">Daily Production Entry</h2>
-          <p className="text-secondary-500 mt-1">Enter today's production quantities from the factory</p>
-        </div>
-        <div className="flex gap-3">
-          <button onClick={fetchProduction} className="btn btn-secondary" type="button">
-            <FiRefreshCw className="w-4 h-4" />
-            Refresh
-          </button>
-          <button onClick={handleSaveAll} disabled={saving} className="btn btn-primary" type="button">
-            {saving ? (
-              <>
-                <FiRefreshCw className="w-4 h-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <FiSave className="w-4 h-4" />
-                Save All
-              </>
-            )}
-          </button>
+      <div className="card bg-black text-white border-black relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(250,204,21,0.35),_transparent_35%)]" />
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-yellow-300 font-semibold">Factory workflow</p>
+            <h2 className="text-3xl font-bold mt-2">Daily Production Entry</h2>
+            <p className="text-white/75 mt-2 max-w-2xl">
+              Enter today’s production quantities, verify stock levels, and keep central inventory aligned before sales start.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <button onClick={fetchProduction} className="btn btn-secondary" type="button">
+              <FiRefreshCw className="w-4 h-4" />
+              Refresh
+            </button>
+            <button onClick={handleSaveAll} disabled={saving} className="btn btn-primary" type="button">
+              {saving ? (
+                <>
+                  <FiRefreshCw className="w-4 h-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <FiSave className="w-4 h-4" />
+                  Save All
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="card">
+      <div className="card border-black/10">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[920px]">
             <thead>
-              <tr>
+              <tr className="bg-yellow-50">
                 <th className="table-header">Item</th>
                 <th className="table-header">Price</th>
                 <th className="table-header">Production Qty</th>
@@ -154,26 +152,28 @@ const Production = () => {
             </thead>
             <tbody>
               {items.map((item) => {
-                const prodData = production.find((p) => p.itemId === item._id);
+                const prodData = production.find((entry) => entry.itemId === item._id);
                 const currentStock = prodData?.currentAvailableStock || 0;
                 const isLowStock = currentStock <= item.lowStockThreshold;
                 const isOutOfStock = currentStock === 0;
 
                 return (
-                  <tr key={item._id} className="hover:bg-secondary-50">
+                  <tr key={item._id} className="hover:bg-yellow-50 transition-colors">
                     <td className="table-cell">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center">
-                          <FiPackage className="w-5 h-5 text-primary-600" />
+                        <div className="w-11 h-11 bg-black rounded-xl flex items-center justify-center border border-black shadow-sm">
+                          <FiPackage className="w-5 h-5 text-yellow-400" />
                         </div>
                         <div>
-                          <p className="font-medium text-secondary-800">{item.name}</p>
-                          <p className="text-sm text-secondary-500">Threshold: {item.lowStockThreshold}</p>
+                          <p className="font-semibold text-black">{item.name}</p>
+                          <p className="text-sm text-black/60">Threshold: {item.lowStockThreshold}</p>
                         </div>
                       </div>
                     </td>
                     <td className="table-cell">
-                      <span className="font-semibold text-secondary-800">Rs {item.price}</span>
+                      <span className="inline-flex items-center rounded-full bg-white border border-black px-3 py-1 font-semibold text-black shadow-sm">
+                        Rs {item.price}
+                      </span>
                     </td>
                     <td className="table-cell">
                       <input
@@ -181,32 +181,28 @@ const Production = () => {
                         min="0"
                         value={productionInputs[item._id] || ''}
                         onChange={(e) => handleInputChange(item._id, e.target.value)}
-                        className="w-24 px-3 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="w-24 px-3 py-2 border border-black rounded-lg focus:ring-2 focus:ring-yellow-300 focus:border-black bg-white text-black"
                         placeholder="0"
                       />
                     </td>
                     <td className="table-cell">
-                      <span
-                        className={`text-xl font-bold ${
-                          isOutOfStock ? 'text-red-600' : isLowStock ? 'text-yellow-600' : 'text-green-600'
-                        }`}
-                      >
+                      <span className="inline-flex items-center justify-center min-w-16 px-3 py-1.5 rounded-full text-xl font-bold bg-yellow-100 border border-black text-black shadow-sm">
                         {currentStock}
                       </span>
                     </td>
                     <td className="table-cell">
                       {isOutOfStock ? (
-                        <span className="badge badge-danger">Out of Stock</span>
+                        <span className="badge bg-black text-white border border-black shadow-sm">Out of Stock</span>
                       ) : isLowStock ? (
-                        <span className="badge badge-warning">Low Stock</span>
+                        <span className="badge bg-yellow-100 text-black border border-black shadow-sm">Low Stock</span>
                       ) : (
-                        <span className="badge badge-success">In Stock</span>
+                        <span className="badge bg-white text-black border border-black shadow-sm">In Stock</span>
                       )}
                     </td>
                     <td className="table-cell">
                       <button
                         onClick={() => handleSaveItem(item._id)}
-                        className="text-primary-600 hover:text-primary-700 font-medium text-sm"
+                        className="inline-flex items-center rounded-full border border-black px-3 py-1.5 text-sm font-semibold text-black hover:bg-yellow-50 transition-colors"
                         type="button"
                       >
                         Update
@@ -220,14 +216,14 @@ const Production = () => {
         </div>
       </div>
 
-      <div className="card">
+      <div className="card border-black/10">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-4">
           <div>
-            <h3 className="text-xl font-semibold text-secondary-800">Production History</h3>
-            <p className="text-secondary-500 text-sm mt-1">Select a date to view item-wise production quantity</p>
+            <h3 className="text-xl font-semibold text-black">Production History</h3>
+            <p className="text-black/60 text-sm mt-1">Select a date to view item-wise production quantity</p>
           </div>
           <div className="flex items-center gap-2">
-            <label htmlFor="history-date" className="text-sm text-secondary-600 font-medium">
+            <label htmlFor="history-date" className="text-sm text-black font-medium">
               Date
             </label>
             <input
@@ -235,27 +231,27 @@ const Production = () => {
               type="date"
               value={historyDate}
               onChange={(e) => setHistoryDate(e.target.value)}
-              className="px-3 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="px-3 py-2 border border-black rounded-lg focus:ring-2 focus:ring-yellow-300 focus:border-black bg-white text-black"
             />
           </div>
         </div>
 
         {historyLoading ? (
-          <p className="text-sm text-secondary-500 px-1 py-3">Loading history...</p>
+          <p className="text-sm text-black/60 px-1 py-3">Loading history...</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[520px]">
               <thead>
-                <tr>
+                <tr className="bg-yellow-50">
                   <th className="table-header">Item Name</th>
                   <th className="table-header">Produced Quantity</th>
                 </tr>
               </thead>
               <tbody>
                 {itemHistoryList.map((row) => (
-                  <tr key={row.itemId} className="hover:bg-secondary-50">
-                    <td className="table-cell font-medium text-secondary-800">{row.itemName}</td>
-                    <td className="table-cell text-secondary-900 font-semibold">{row.quantity}</td>
+                  <tr key={row.itemId} className="hover:bg-yellow-50 transition-colors">
+                    <td className="table-cell font-medium text-black">{row.itemName}</td>
+                    <td className="table-cell text-black font-semibold">{row.quantity}</td>
                   </tr>
                 ))}
               </tbody>

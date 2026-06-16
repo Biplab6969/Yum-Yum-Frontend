@@ -32,7 +32,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'medium' }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-3 sm:p-4 pt-16 sm:pt-4">
       {/* Backdrop */}
       <div 
         className={`absolute inset-0 bg-black transition-opacity duration-200 ${isVisible ? 'opacity-50' : 'opacity-0'}`}
@@ -41,11 +41,11 @@ const Modal = ({ isOpen, onClose, title, children, size = 'medium' }) => {
       
       {/* Modal */}
       <div 
-        className={`relative bg-white rounded-xl shadow-xl w-full ${sizeClasses[size]} max-h-[90vh] overflow-hidden transform transition-all duration-200 ${isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
+        className={`relative bg-white rounded-xl shadow-xl w-full ${sizeClasses[size]} max-w-[calc(100vw-1.5rem)] max-h-[calc(100vh-4rem)] sm:max-h-[90vh] overflow-hidden transform transition-all duration-200 ${isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-secondary-200">
-          <h2 className="text-xl font-semibold text-secondary-800">{title}</h2>
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-secondary-200">
+          <h2 className="text-lg sm:text-xl font-semibold text-secondary-800 truncate pr-4">{title}</h2>
           <button
             onClick={handleClose}
             className="p-2 text-secondary-400 hover:text-secondary-600 hover:bg-secondary-100 rounded-lg transition-colors"
@@ -55,7 +55,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'medium' }) => {
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+        <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(100vh-8rem)] sm:max-h-[calc(90vh-80px)]">
           {children}
         </div>
       </div>

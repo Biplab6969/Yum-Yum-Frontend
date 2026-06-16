@@ -10,8 +10,26 @@
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  background-color: #f1f5f9;
+  background: linear-gradient(180deg, #ffffff 0%, #fff7c2 100%);
+  color: #111111;
   min-height: 100vh;
+  overflow-x: hidden;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+img, svg, video, canvas {
+  max-width: 100%;
+}
+
+button, input, textarea, select {
+  touch-action: manipulation;
 }
 
 /* Custom scrollbar */
@@ -21,16 +39,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #ffffff;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #111111;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #facc15;
 }
 
 /* Form inputs */
@@ -42,27 +60,27 @@ input[type="number"]::-webkit-outer-spin-button {
 /* Utility classes */
 @layer components {
   .btn {
-    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2;
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-md;
   }
   
   .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800;
+    @apply bg-black text-white border border-black hover:bg-yellow-400 hover:text-black active:bg-yellow-500;
   }
   
   .btn-secondary {
-    @apply bg-secondary-200 text-secondary-700 hover:bg-secondary-300 active:bg-secondary-400;
+    @apply bg-white text-black border border-black hover:bg-yellow-50 active:bg-yellow-100;
   }
   
   .btn-success {
-    @apply bg-green-600 text-white hover:bg-green-700 active:bg-green-800;
+    @apply bg-yellow-400 text-black border border-black hover:bg-yellow-300 active:bg-yellow-500;
   }
   
   .btn-danger {
-    @apply bg-red-600 text-white hover:bg-red-700 active:bg-red-800;
+    @apply bg-black text-white border border-black hover:bg-yellow-400 hover:text-black active:bg-yellow-500;
   }
   
   .btn-outline {
-    @apply border-2 border-primary-600 text-primary-600 hover:bg-primary-50;
+    @apply border-2 border-black text-black hover:bg-yellow-50;
   }
   
   .input {
@@ -70,27 +88,27 @@ input[type="number"]::-webkit-outer-spin-button {
   }
   
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-secondary-200 p-6;
+    @apply bg-white rounded-xl shadow-sm border border-black/10 p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5;
   }
   
   .sidebar-link {
-    @apply flex items-center gap-3 px-4 py-3 rounded-lg text-secondary-600 hover:bg-secondary-100 hover:text-secondary-900 transition-all duration-200;
+    @apply flex items-center gap-3 px-4 py-3 rounded-lg text-black hover:bg-yellow-50 hover:text-black transition-all duration-200 hover:translate-x-1;
   }
   
   .sidebar-link.active {
-    @apply bg-primary-50 text-primary-700 font-medium;
+    @apply bg-yellow-100 text-black font-medium;
   }
   
   .stat-card {
-    @apply bg-white rounded-xl shadow-sm border border-secondary-200 p-5;
+    @apply bg-white rounded-xl shadow-sm border border-black/10 p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5;
   }
   
   .table-header {
-    @apply bg-secondary-50 text-secondary-700 font-semibold text-left px-4 py-3;
+    @apply bg-white text-black font-semibold text-left px-4 py-3 border-b border-black/10;
   }
   
   .table-cell {
-    @apply px-4 py-3 border-b border-secondary-100;
+    @apply px-4 py-3 border-b border-black/10;
   }
   
   .badge {
@@ -98,19 +116,19 @@ input[type="number"]::-webkit-outer-spin-button {
   }
   
   .badge-success {
-    @apply bg-green-100 text-green-700;
+    @apply bg-yellow-100 text-black;
   }
   
   .badge-warning {
-    @apply bg-yellow-100 text-yellow-700;
+    @apply bg-white text-black border border-black;
   }
   
   .badge-danger {
-    @apply bg-red-100 text-red-700;
+    @apply bg-black text-white;
   }
   
   .badge-info {
-    @apply bg-blue-100 text-blue-700;
+    @apply bg-yellow-50 text-black border border-black/10;
   }
 }
 
@@ -156,4 +174,19 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .animate-pulse-slow {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-popIn {
+  animation: popIn 0.25s ease-out;
 }

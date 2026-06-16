@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { shopAPI, itemAPI, productionAPI } from '../services/api';
+import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
 
 const DataContext = createContext(null);
@@ -71,10 +72,14 @@ export const DataProvider = ({ children }) => {
     await Promise.all([fetchShops(), fetchItems(), fetchProduction()]);
   }, [fetchShops, fetchItems, fetchProduction]);
 
-  // Initial fetch
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
+  // Fetch only after auth check completes and user is authenticated
   useEffect(() => {
-    refreshData();
-  }, []);
+    if (!authLoading && isAuthenticated) {
+      refreshData();
+    }
+  }, [authLoading, isAuthenticated, refreshData]);
 
   const value = {
     shops,

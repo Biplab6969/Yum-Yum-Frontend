@@ -1,30 +1,31 @@
 const StatCard = ({ title, value, icon: Icon, color = 'primary', subtitle, trend }) => {
   const colorClasses = {
-    primary: 'bg-primary-50 text-primary-600',
-    green: 'bg-green-50 text-green-600',
-    blue: 'bg-blue-50 text-blue-600',
-    yellow: 'bg-yellow-50 text-yellow-600',
-    red: 'bg-red-50 text-red-600',
-    purple: 'bg-purple-50 text-purple-600'
+    primary: 'bg-black text-white border border-black',
+    green: 'bg-yellow-100 text-black border border-black',
+    blue: 'bg-white text-black border border-black',
+    yellow: 'bg-yellow-50 text-black border border-black',
+    red: 'bg-black text-white border border-black',
+    purple: 'bg-white text-black border border-black'
   };
 
   return (
-    <div className="stat-card animate-fadeIn">
-      <div className="flex items-start justify-between">
+    <div className="stat-card animate-popIn relative overflow-hidden">
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-black via-yellow-400 to-black" />
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-secondary-500 text-sm font-medium">{title}</p>
-          <p className="text-2xl font-bold text-secondary-800 mt-1">{value}</p>
+          <p className="text-xs uppercase tracking-[0.18em] text-black/70 font-semibold">{title}</p>
+          <p className="text-2xl font-bold text-black mt-2 leading-tight">{value}</p>
           {subtitle && (
-            <p className="text-secondary-400 text-sm mt-1">{subtitle}</p>
+            <p className="text-black text-sm mt-2">{subtitle}</p>
           )}
           {trend && (
-            <p className={`text-sm mt-2 font-medium ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <p className="text-sm mt-2 font-medium text-black">
               {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
             </p>
           )}
         </div>
         {Icon && (
-          <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
+          <div className={`p-3 rounded-xl ${colorClasses[color]} transition-transform duration-200 hover:scale-105 shadow-sm`}>
             <Icon className="w-6 h-6" />
           </div>
         )}

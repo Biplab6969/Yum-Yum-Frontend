@@ -20,6 +20,17 @@ const SellerDashboard = () => {
     }
   }, [shopId]);
 
+  // Re-fetch when transactions are updated elsewhere (e.g., Save All)
+  useEffect(() => {
+    const handler = (e) => {
+      if (e?.detail?.shopId === shopId) {
+        fetchData();
+      }
+    };
+    window.addEventListener('transactions:updated', handler);
+    return () => window.removeEventListener('transactions:updated', handler);
+  }, [shopId]);
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -68,20 +79,30 @@ const SellerDashboard = () => {
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl p-6 text-white">
-        <h2 className="text-2xl font-bold">Welcome, {user?.name}!</h2>
-        <p className="text-primary-100 mt-1">
-          {shopName} • {new Date().toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
-        </p>
+      <div className="card bg-black text-white border-black relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(250,204,21,0.35),_transparent_35%)]" />
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-yellow-300 font-semibold">Seller overview</p>
+            <h2 className="text-2xl font-bold mt-2">Welcome, {user?.name}!</h2>
+            <p className="text-white/75 mt-1">
+              {shopName} • {new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </p>
+          </div>
+          <div className="inline-flex items-center gap-2 bg-yellow-400 text-black border border-black rounded-full px-4 py-2 shadow-sm w-fit">
+            <FiShoppingBag className="w-4 h-4" />
+            <span className="text-sm font-semibold">Daily sales</span>
+          </div>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Items Taken Today"
           value={todayData?.totals?.totalTaken || 0}
@@ -106,11 +127,11 @@ const SellerDashboard = () => {
           icon={FiDollarSign}
           color="purple"
         />
-      </div>
+      </div> */}
 
       {/* Central Stock Available */}
-      <div className="card">
-        <h3 className="text-lg font-semibold text-secondary-800 mb-4">
+      <div className="card border-black/10">
+        <h3 className="text-lg font-semibold text-black mb-4">
           Central Stock Available Today
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
@@ -118,18 +139,18 @@ const SellerDashboard = () => {
             <div 
               key={index}
               className={`p-4 rounded-lg text-center ${
-                item.isLowStock ? 'bg-red-50' : 'bg-green-50'
+                item.isLowStock ? 'bg-yellow-50 border border-black' : 'bg-white border border-black'
               }`}
             >
-              <p className="text-sm text-secondary-600 truncate" title={item.itemName}>
+              <p className="text-sm text-black truncate" title={item.itemName}>
                 {item.itemName}
               </p>
               <p className={`text-2xl font-bold mt-1 ${
-                item.isLowStock ? 'text-red-600' : 'text-green-600'
+                'text-black'
               }`}>
                 {item.currentAvailableStock}
               </p>
-              <p className="text-xs text-secondary-500">available</p>
+              <p className="text-xs text-black/60">available</p>
             </div>
           ))}
         </div>
@@ -137,8 +158,8 @@ const SellerDashboard = () => {
 
       {/* Today's Summary */}
       {todayData?.transactions && (
-        <div className="card">
-          <h3 className="text-lg font-semibold text-secondary-800 mb-4">
+        <div className="card border-black/10">
+          <h3 className="text-lg font-semibold text-black mb-4">
             Today's Item Summary
           </h3>
           <div className="overflow-x-auto">
@@ -161,23 +182,23 @@ const SellerDashboard = () => {
                     <td className="table-cell font-medium">{item.itemName}</td>
                     <td className="table-cell text-center">₹{item.price}</td>
                     <td className="table-cell text-center">{item.itemsTaken}</td>
-                    <td className="table-cell text-center text-green-600 font-medium">
+                    <td className="table-cell text-center text-black font-medium">
                       {item.itemsSold}
                     </td>
                     <td className="table-cell text-center text-yellow-600">
                       {item.itemsReturned}
                     </td>
-                    <td className="table-cell text-center text-red-600">
+                    <td className="table-cell text-center text-black">
                       {item.itemsWaste}
                     </td>
                     <td className="table-cell text-center">
                       <span className={`px-2 py-1 rounded ${
-                        item.remaining > 0 ? 'bg-blue-100 text-blue-700' : 'bg-secondary-100'
+                        item.remaining > 0 ? 'bg-yellow-100 text-black border border-black' : 'bg-white text-black border border-black'
                       }`}>
                         {item.remaining}
                       </span>
                     </td>
-                    <td className="table-cell text-right font-semibold text-green-600">
+                    <td className="table-cell text-right font-semibold text-black">
                       ₹{item.totalRevenue.toLocaleString()}
                     </td>
                   </tr>
@@ -187,11 +208,11 @@ const SellerDashboard = () => {
                 <tr className="bg-secondary-50 font-semibold">
                   <td className="table-cell" colSpan={2}>Total</td>
                   <td className="table-cell text-center">{todayData.totals?.totalTaken}</td>
-                  <td className="table-cell text-center text-green-600">{todayData.totals?.totalSold}</td>
-                  <td className="table-cell text-center text-yellow-600">{todayData.totals?.totalReturned}</td>
-                  <td className="table-cell text-center text-red-600">{todayData.totals?.totalWaste}</td>
+                  <td className="table-cell text-center text-black">{todayData.totals?.totalSold}</td>
+                  <td className="table-cell text-center text-black">{todayData.totals?.totalReturned}</td>
+                  <td className="table-cell text-center text-black">{todayData.totals?.totalWaste}</td>
                   <td className="table-cell text-center">-</td>
-                  <td className="table-cell text-right text-green-600">
+                  <td className="table-cell text-right text-black">
                     ₹{(todayData.totals?.totalRevenue || 0).toLocaleString()}
                   </td>
                 </tr>
@@ -203,8 +224,8 @@ const SellerDashboard = () => {
 
       {/* Sales Chart */}
       {salesData && (
-        <div className="card">
-          <h3 className="text-lg font-semibold text-secondary-800 mb-4">
+        <div className="card border-black/10">
+          <h3 className="text-lg font-semibold text-black mb-4">
             Item Sales (Last 7 Days)
           </h3>
           <BarChart data={salesData} height={300} />

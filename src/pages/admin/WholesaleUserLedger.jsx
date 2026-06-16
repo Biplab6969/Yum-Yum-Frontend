@@ -193,7 +193,7 @@ const WholesaleUserLedger = () => {
       header: 'Type',
       accessor: 'entryType',
       render: (value) => (
-        <span className={`badge ${value === 'SALE' ? 'badge-warning' : 'badge-success'}`}>
+        <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold shadow-sm ${value === 'SALE' ? 'bg-yellow-100 text-black border-black' : 'bg-black text-white border-black'}`}>
           {value}
         </span>
       )
@@ -205,11 +205,7 @@ const WholesaleUserLedger = () => {
     {
       header: 'Amount',
       accessor: 'amount',
-      render: (value, row) => (
-        <span className={row.entryType === 'SALE' ? 'text-red-600 font-semibold' : 'text-green-600 font-semibold'}>
-          {formatCurrency(value)}
-        </span>
-      )
+      render: (value) => <span className="text-black font-semibold">{formatCurrency(value)}</span>
     },
     {
       header: 'Notes',
@@ -224,52 +220,67 @@ const WholesaleUserLedger = () => {
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
-          <Link to="/admin/wholesale-users" className="inline-flex items-center gap-2 text-primary-700 hover:text-primary-800 text-sm font-medium mb-2">
-            <FiArrowLeft className="w-4 h-4" />
-            Back to Wholesale Users
-          </Link>
-          <h2 className="text-2xl font-bold text-secondary-800">{wholesaleUser?.name}</h2>
-          <p className="text-secondary-500">
-            {wholesaleUser?.companyName || 'Individual buyer'} | {wholesaleUser?.email} | {wholesaleUser?.phone}
-          </p>
+      <div className="card bg-black text-white border-black relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(250,204,21,0.34),_transparent_38%)]" />
+        <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <Link to="/admin/wholesale-users" className="inline-flex items-center gap-2 text-yellow-300 hover:text-yellow-200 text-sm font-semibold mb-2">
+              <FiArrowLeft className="w-4 h-4" />
+              Back to Wholesale Users
+            </Link>
+            <p className="text-xs uppercase tracking-[0.35em] text-yellow-200/80 font-semibold">Wholesale ledger</p>
+            <h2 className="text-3xl font-bold mt-2">{wholesaleUser?.name}</h2>
+            <p className="text-white/75 mt-2 max-w-2xl">
+              {wholesaleUser?.companyName || 'Individual buyer'} | {wholesaleUser?.email} | {wholesaleUser?.phone}
+            </p>
+          </div>
+          <button onClick={() => fetchLedger({ silent: true })} className="btn btn-secondary w-fit" disabled={refreshing}>
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
         </div>
-        <button onClick={() => fetchLedger({ silent: true })} className="btn btn-secondary" disabled={refreshing}>
-          {refreshing ? 'Refreshing...' : 'Refresh'}
-        </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="stat-card">
-          <p className="text-sm text-secondary-500">Previous Pending</p>
-          <p className="text-2xl font-bold text-secondary-800 mt-1">{formatCurrency(summary?.previousPending)}</p>
+          <p className="text-sm uppercase tracking-[0.2em] text-black/50 font-semibold">Previous pending</p>
+          <p className="text-2xl font-bold text-black mt-2">{formatCurrency(summary?.previousPending)}</p>
+          <p className="text-xs text-black/60 mt-2">Balance carried into today</p>
         </div>
         <div className="stat-card">
-          <p className="text-sm text-secondary-500">Today Sales</p>
-          <p className="text-2xl font-bold text-secondary-800 mt-1">{formatCurrency(summary?.todaySalesAmount)}</p>
+          <p className="text-sm uppercase tracking-[0.2em] text-black/50 font-semibold">Today sales</p>
+          <p className="text-2xl font-bold text-black mt-2">{formatCurrency(summary?.todaySalesAmount)}</p>
+          <p className="text-xs text-black/60 mt-2">New wholesale sales booked</p>
         </div>
         <div className="stat-card">
-          <p className="text-sm text-secondary-500">Today Received</p>
-          <p className="text-2xl font-bold text-green-600 mt-1">{formatCurrency(summary?.todayReceivedAmount)}</p>
+          <p className="text-sm uppercase tracking-[0.2em] text-black/50 font-semibold">Today received</p>
+          <p className="text-2xl font-bold text-black mt-2">{formatCurrency(summary?.todayReceivedAmount)}</p>
+          <p className="text-xs text-black/60 mt-2">Payments recorded today</p>
         </div>
-        <div className="stat-card border-red-200">
-          <p className="text-sm text-secondary-500">Current Pending</p>
-          <p className="text-2xl font-bold text-red-600 mt-1">{formatCurrency(summary?.pendingAmount)}</p>
+        <div className="stat-card border-black">
+          <p className="text-sm uppercase tracking-[0.2em] text-black/50 font-semibold">Current pending</p>
+          <p className="text-2xl font-bold text-black mt-2">{formatCurrency(summary?.pendingAmount)}</p>
+          <p className="text-xs text-black/60 mt-2">Outstanding balance right now</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <div className="card">
-          <div className="flex items-center gap-2 mb-4">
-            <FiFileText className="w-5 h-5 text-secondary-600" />
-            <h3 className="text-lg font-semibold text-secondary-800">Create Wholesale Sale</h3>
+        <div className="card border-black/10 p-0 overflow-hidden">
+          <div className="px-6 pt-6 pb-4 border-b border-black/10 bg-yellow-50/60">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-black bg-black text-yellow-400 shadow-sm">
+                <FiFileText className="w-5 h-5" />
+              </span>
+              <div>
+                <p className="text-xs uppercase tracking-[0.25em] text-black/50 font-semibold">Sale entry</p>
+                <h3 className="text-xl font-bold text-black mt-1">Create Wholesale Sale</h3>
+              </div>
+            </div>
           </div>
 
-          <form onSubmit={submitSale} className="space-y-4">
-            <div className="max-h-72 overflow-y-auto border border-secondary-200 rounded-lg">
-              <table className="w-full text-sm">
-                <thead className="bg-secondary-50 sticky top-0">
+          <form onSubmit={submitSale} className="space-y-5 p-6">
+            <div className="max-h-72 overflow-y-auto rounded-2xl border border-black/10 bg-white shadow-sm">
+              <table className="w-full text-sm min-w-[620px]">
+                <thead className="bg-yellow-50 sticky top-0">
                   <tr>
                     <th className="table-header">Item</th>
                     <th className="table-header">Qty</th>
@@ -286,12 +297,12 @@ const WholesaleUserLedger = () => {
 
                     return (
                       <tr key={item._id}>
-                        <td className="table-cell">{item.name}</td>
+                        <td className="table-cell font-medium text-black">{item.name}</td>
                         <td className="table-cell">
                           <input
                             type="number"
                             min="0"
-                            className="input !px-2 !py-1"
+                            className="input !px-2 !py-1 text-center"
                             value={line.quantity}
                             onChange={(e) => handleSaleInputChange(item._id, 'quantity', e.target.value)}
                           />
@@ -301,12 +312,12 @@ const WholesaleUserLedger = () => {
                             type="number"
                             min="0"
                             step="0.01"
-                            className="input !px-2 !py-1"
+                            className="input !px-2 !py-1 text-center"
                             value={line.unitPrice}
                             onChange={(e) => handleSaleInputChange(item._id, 'unitPrice', e.target.value)}
                           />
                         </td>
-                        <td className="table-cell font-medium">{formatCurrency(lineTotal)}</td>
+                        <td className="table-cell font-semibold text-black">{formatCurrency(lineTotal)}</td>
                       </tr>
                     );
                   })}
@@ -315,7 +326,7 @@ const WholesaleUserLedger = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-secondary-700 mb-1">Sale Notes</label>
+              <label className="block text-sm font-medium text-black mb-1.5">Sale Notes</label>
               <textarea
                 className="input min-h-20"
                 value={saleNotes}
@@ -324,9 +335,9 @@ const WholesaleUserLedger = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between pt-2">
-              <p className="text-lg font-semibold text-secondary-800">
-                Sale Total: <span className="text-primary-700">{formatCurrency(salePreview.totalAmount)}</span>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pt-2 border-t border-black/10">
+              <p className="text-lg font-semibold text-black">
+                Sale Total: <span className="text-black bg-yellow-100 border border-black rounded-full px-3 py-1 ml-2">{formatCurrency(salePreview.totalAmount)}</span>
               </p>
               <button type="submit" className="btn btn-primary" disabled={savingSale}>
                 <FiSave className="w-4 h-4" />
@@ -336,15 +347,22 @@ const WholesaleUserLedger = () => {
           </form>
         </div>
 
-        <div className="card">
-          <div className="flex items-center gap-2 mb-4">
-            <FiDollarSign className="w-5 h-5 text-secondary-600" />
-            <h3 className="text-lg font-semibold text-secondary-800">Record Payment</h3>
+        <div className="card border-black/10 p-0 overflow-hidden">
+          <div className="px-6 pt-6 pb-4 border-b border-black/10 bg-yellow-50/60">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-black bg-black text-yellow-400 shadow-sm">
+                <FiDollarSign className="w-5 h-5" />
+              </span>
+              <div>
+                <p className="text-xs uppercase tracking-[0.25em] text-black/50 font-semibold">Payment entry</p>
+                <h3 className="text-xl font-bold text-black mt-1">Record Payment</h3>
+              </div>
+            </div>
           </div>
 
-          <form onSubmit={submitPayment} className="space-y-4">
+          <form onSubmit={submitPayment} className="space-y-5 p-6">
             <div>
-              <label className="block text-sm font-medium text-secondary-700 mb-1">Amount Received</label>
+              <label className="block text-sm font-medium text-black mb-1.5">Amount Received</label>
               <input
                 type="number"
                 min="0"
@@ -357,7 +375,7 @@ const WholesaleUserLedger = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-secondary-700 mb-1">Payment Method</label>
+              <label className="block text-sm font-medium text-black mb-1.5">Payment Method</label>
               <select
                 className="input"
                 value={paymentData.paymentMethod}
@@ -372,7 +390,7 @@ const WholesaleUserLedger = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-secondary-700 mb-1">Payment Notes</label>
+              <label className="block text-sm font-medium text-black mb-1.5">Payment Notes</label>
               <textarea
                 className="input min-h-24"
                 value={paymentData.notes}
@@ -388,14 +406,20 @@ const WholesaleUserLedger = () => {
         </div>
       </div>
 
-      <div className="card">
-        <h3 className="text-lg font-semibold text-secondary-800 mb-4">Ledger History</h3>
-        <DataTable
-          columns={ledgerColumns}
-          data={ledger.entries || []}
-          loading={false}
-          emptyMessage="No ledger entries found"
-        />
+      <div className="card border-black/10 p-0 overflow-hidden">
+        <div className="px-6 pt-6 pb-4 border-b border-black/10">
+          <p className="text-xs uppercase tracking-[0.25em] text-black/50 font-semibold">Ledger archive</p>
+          <h3 className="text-xl font-bold text-black mt-1">Ledger History</h3>
+          <p className="text-sm text-black/60 mt-1">Track sales, payments, and notes chronologically for this buyer.</p>
+        </div>
+        <div className="p-6">
+          <DataTable
+            columns={ledgerColumns}
+            data={ledger.entries || []}
+            loading={false}
+            emptyMessage="No ledger entries found"
+          />
+        </div>
       </div>
     </div>
   );

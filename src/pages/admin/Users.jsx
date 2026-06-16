@@ -123,16 +123,12 @@ const Users = () => {
       accessor: 'name',
       render: (value, row) => (
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-            row.role === 'admin' ? 'bg-purple-100' : 'bg-blue-100'
-          }`}>
-            <FiUser className={`w-5 h-5 ${
-              row.role === 'admin' ? 'text-purple-600' : 'text-blue-600'
-            }`} />
+          <div className="w-11 h-11 rounded-2xl bg-black text-yellow-400 flex items-center justify-center border border-black shadow-sm">
+            <FiUser className="w-5 h-5" />
           </div>
           <div>
-            <p className="font-medium text-secondary-800">{value}</p>
-            <p className="text-sm text-secondary-500">{row.email}</p>
+            <p className="font-semibold text-black">{value}</p>
+            <p className="text-sm text-black/60">{row.email}</p>
           </div>
         </div>
       )
@@ -141,9 +137,7 @@ const Users = () => {
       header: 'Role',
       accessor: 'role',
       render: (value) => (
-        <span className={`badge ${
-          value === 'admin' ? 'badge-info' : 'badge-success'
-        }`}>
+        <span className="inline-flex items-center rounded-full border border-black bg-yellow-100 px-3 py-1 text-xs font-semibold text-black shadow-sm">
           {value.charAt(0).toUpperCase() + value.slice(1)}
         </span>
       )
@@ -153,11 +147,13 @@ const Users = () => {
       accessor: 'shopId',
       render: (value) => value ? (
         <div className="flex items-center gap-2">
-          <FiShoppingBag className="w-4 h-4 text-secondary-400" />
-          <span>{value.name || `Shop ${value.shopNumber}`}</span>
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-black bg-white text-black shadow-sm">
+            <FiShoppingBag className="w-4 h-4" />
+          </span>
+          <span className="font-medium text-black">{value.name || `Shop ${value.shopNumber}`}</span>
         </div>
       ) : (
-        <span className="text-secondary-400">-</span>
+        <span className="inline-flex items-center rounded-full border border-black bg-white px-3 py-1 text-xs font-semibold text-black shadow-sm">-</span>
       )
     },
     {
@@ -166,7 +162,7 @@ const Users = () => {
       render: (value, row) => (
         <button
           onClick={() => toggleStatus(row)}
-          className={`badge ${value ? 'badge-success' : 'badge-danger'}`}
+          className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold shadow-sm transition-colors ${value ? 'bg-white text-black border-black hover:bg-yellow-50' : 'bg-black text-white border-black hover:bg-yellow-400 hover:text-black'}`}
         >
           {value ? 'Active' : 'Inactive'}
         </button>
@@ -190,13 +186,13 @@ const Users = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => openEditModal(row)}
-            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-black bg-white text-black shadow-sm transition-colors hover:bg-yellow-50"
           >
             <FiEdit2 className="w-4 h-4" />
           </button>
           <button
             onClick={() => handleDelete(row)}
-            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-black bg-white text-black shadow-sm transition-colors hover:bg-yellow-50"
           >
             <FiTrash2 className="w-4 h-4" />
           </button>
@@ -211,22 +207,53 @@ const Users = () => {
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-secondary-800">User Management</h2>
-          <p className="text-secondary-500 mt-1">
-            Manage admin and seller accounts
-          </p>
+      <div className="card bg-black text-white border-black relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(250,204,21,0.34),_transparent_38%)]" />
+        <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.35em] text-yellow-300 font-semibold">Access control</p>
+            <h2 className="text-3xl font-bold mt-2">User Management</h2>
+            <p className="text-white/75 mt-2 max-w-2xl">
+              Manage admin and seller accounts, shop assignments, and access state from one clean admin view.
+            </p>
+          </div>
+          <button onClick={openAddModal} className="btn btn-success w-fit">
+            <FiPlus className="w-4 h-4" />
+            Add User
+          </button>
         </div>
-        <button onClick={openAddModal} className="btn btn-primary">
-          <FiPlus className="w-4 h-4" />
-          Add User
-        </button>
       </div>
 
-      {/* Users Table */}
-      <div className="card">
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="card border-black/10">
+          <p className="text-sm uppercase tracking-[0.2em] text-black/50 font-semibold">Total users</p>
+          <p className="mt-2 text-3xl font-bold text-black">{users.length}</p>
+          <p className="text-sm text-black/60 mt-1">All admin, seller, and other accounts</p>
+        </div>
+        <div className="card border-black/10">
+          <p className="text-sm uppercase tracking-[0.2em] text-black/50 font-semibold">Active users</p>
+          <p className="mt-2 text-3xl font-bold text-black">{users.filter((user) => user.isActive).length}</p>
+          <p className="text-sm text-black/60 mt-1">Accounts currently enabled</p>
+        </div>
+        <div className="card border-black/10">
+          <p className="text-sm uppercase tracking-[0.2em] text-black/50 font-semibold">Seller accounts</p>
+          <p className="mt-2 text-3xl font-bold text-black">{users.filter((user) => user.role === 'seller').length}</p>
+          <p className="text-sm text-black/60 mt-1">Users linked to shops</p>
+        </div>
+      </div>
+
+      <div className="card border-black/10 p-0 overflow-hidden">
+        <div className="px-6 pt-6 pb-4 border-b border-black/10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.25em] text-black/50 font-semibold">Account directory</p>
+            <h3 className="text-xl font-bold text-black mt-1">User List</h3>
+            <p className="text-sm text-black/60 mt-1">Review role, shop assignment, status, and activity from one place.</p>
+          </div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-black bg-yellow-50 px-3 py-2 text-sm font-semibold text-black w-fit">
+            <FiUser className="w-4 h-4" />
+            {users.length} accounts
+          </div>
+        </div>
         <DataTable 
           columns={columns}
           data={users}
@@ -235,15 +262,22 @@ const Users = () => {
         />
       </div>
 
-      {/* Add/Edit Modal */}
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         title={editingUser ? 'Edit User' : 'Add New User'}
+        size="large"
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="rounded-2xl border border-black bg-yellow-50 p-4">
+            <p className="text-xs uppercase tracking-[0.25em] text-black/50 font-semibold">Account setup</p>
+            <p className="mt-2 text-sm text-black/70">
+              Create or update access in a way that keeps shop assignments and login state clear.
+            </p>
+          </div>
+
           <div>
-            <label className="block text-sm font-medium text-secondary-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1.5">
               Full Name
             </label>
             <input
@@ -257,7 +291,7 @@ const Users = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-secondary-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1.5">
               Email
             </label>
             <input
@@ -271,7 +305,7 @@ const Users = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-secondary-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1.5">
               Password {editingUser && '(leave blank to keep current)'}
             </label>
             <input
@@ -285,9 +319,9 @@ const Users = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-secondary-700 mb-1">
+              <label className="block text-sm font-medium text-black mb-1.5">
                 Role
               </label>
               <select
@@ -300,7 +334,7 @@ const Users = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-secondary-700 mb-1">
+              <label className="block text-sm font-medium text-black mb-1.5">
                 Assigned Shop
               </label>
               <select
@@ -326,15 +360,15 @@ const Users = () => {
                 id="isActive"
                 checked={formData.isActive}
                 onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
-                className="w-4 h-4 text-primary-600 rounded"
+                className="w-4 h-4 rounded border-black text-black focus:ring-yellow-400"
               />
-              <label htmlFor="isActive" className="text-sm text-secondary-700">
+              <label htmlFor="isActive" className="text-sm text-black">
                 Account is active
               </label>
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={() => setShowModal(false)}

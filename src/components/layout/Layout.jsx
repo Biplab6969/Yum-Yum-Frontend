@@ -32,19 +32,19 @@ const Layout = () => {
 
   return (
     <DataProvider>
-      <div className="min-h-screen bg-secondary-50">
+      <div className="min-h-screen bg-secondary-50 overflow-x-hidden">
         <Sidebar 
           isOpen={sidebarOpen} 
           onClose={() => setSidebarOpen(false)} 
         />
         
-        <div className="lg:ml-64">
+        <div className="lg:ml-64 min-w-0">
           <Header 
             onMenuClick={() => setSidebarOpen(true)} 
             title={getPageTitle()}
           />
           
-          <main className="p-6">
+          <main className="p-4 sm:p-6 min-w-0">
             <Outlet />
           </main>
         </div>

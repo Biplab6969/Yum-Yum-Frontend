@@ -8,9 +8,9 @@ const Loading = ({ size = 'medium', text = 'Loading...' }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-8">
-      <FiLoader className={`${sizeClasses[size]} text-primary-600 animate-spin`} />
-      {text && <p className="mt-3 text-secondary-500 text-sm">{text}</p>}
+    <div className="flex flex-col items-center justify-center p-8 animate-popIn">
+      <FiLoader className={`${sizeClasses[size]} text-black animate-spin`} />
+      {text && <p className="mt-3 text-black text-sm">{text}</p>}
     </div>
   );
 };

@@ -115,13 +115,30 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-6 animate-fadeIn">
+      <div className="card bg-black text-white border-black relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(250,204,21,0.35),_transparent_35%)]" />
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-yellow-300 font-semibold">Operations overview</p>
+            <h2 className="text-3xl font-bold mt-2">Dashboard</h2>
+            <p className="text-white/75 mt-2 max-w-xl">
+              Track revenue, stock, and shop performance from one focused view.
+            </p>
+          </div>
+          <div className="inline-flex items-center gap-2 bg-yellow-400 text-black border border-black rounded-full px-4 py-2 shadow-sm w-fit">
+            <FiCalendar className="w-4 h-4" />
+            <span className="text-sm font-semibold">Live data</span>
+          </div>
+        </div>
+      </div>
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard
           title="Today's Revenue"
           value={`₹${(today?.totalRevenue || 0).toLocaleString()}`}
           icon={FiDollarSign}
-          color="green"
+          color="yellow"
           subtitle={`${today?.totalSales || 0} items sold`}
         />
         <StatCard
@@ -135,16 +152,16 @@ const AdminDashboard = () => {
           title="Yearly Revenue"
           value={`₹${(yearly?.totalRevenue || 0).toLocaleString()}`}
           icon={FiCalendar}
-          color="purple"
+          color="primary"
           subtitle={`${yearly?.totalSales || 0} items sold`}
         />
       </div>
 
       {/* Stock Remaining by Item */}
-      <div className="card">
+      <div className="card border-black/10">
         <div className="flex items-center gap-2 mb-4">
-          <FiShoppingBag className="w-5 h-5 text-secondary-600" />
-          <h3 className="text-lg font-semibold text-secondary-800">Stock Remaining by Item</h3>
+          <FiShoppingBag className="w-5 h-5 text-black" />
+          <h3 className="text-lg font-semibold text-black">Stock Remaining by Item</h3>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
           {stockByItem.map((item, index) => {
@@ -155,14 +172,14 @@ const AdminDashboard = () => {
               <div
                 key={item.itemId || index}
                 className={`p-4 rounded-lg text-center border ${
-                  isLowStock ? 'bg-red-50 border-red-100' : 'bg-secondary-50 border-secondary-100'
+                    isLowStock ? 'bg-yellow-50 border-black' : 'bg-white border-black'
                 }`}
               >
-                <p className="text-sm text-secondary-600 truncate">{item.itemName}</p>
-                <p className={`text-2xl font-bold mt-1 ${isLowStock ? 'text-red-600' : 'text-secondary-800'}`}>
+                  <p className="text-sm text-black truncate">{item.itemName}</p>
+                  <p className="text-2xl font-bold mt-1 text-black">
                   {remainingStock}
                 </p>
-                <p className="text-xs text-secondary-500 mt-1">items left</p>
+                  <p className="text-xs text-black/60 mt-1">items left</p>
               </div>
             );
           })}
@@ -172,13 +189,13 @@ const AdminDashboard = () => {
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Sales Chart */}
-        <div className="lg:col-span-2 card">
+        <div className="lg:col-span-2 card border-black/10">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-secondary-800">Sales Trend</h3>
+            <h3 className="text-lg font-semibold text-black">Sales Trend</h3>
             <select
               value={chartPeriod}
               onChange={(e) => setChartPeriod(e.target.value)}
-              className="px-3 py-2 border border-secondary-300 rounded-lg text-sm"
+              className="px-3 py-2 border border-black rounded-lg text-sm bg-white text-black"
             >
               <option value="weekly">Last 7 Days</option>
               <option value="monthly">This Month</option>
@@ -189,15 +206,15 @@ const AdminDashboard = () => {
         </div>
 
         {/* Item Performance */}
-        <div className="card">
-          <h3 className="text-lg font-semibold text-secondary-800 mb-4">Item Revenue</h3>
+        <div className="card border-black/10">
+          <h3 className="text-lg font-semibold text-black mb-4">Item Revenue</h3>
           {itemChartData && <DoughnutChart data={itemChartData} height={300} />}
         </div>
       </div>
 
       {/* Shop Comparison */}
-      <div className="card">
-        <h3 className="text-lg font-semibold text-secondary-800 mb-4">Shop Performance Comparison</h3>
+      <div className="card border-black/10">
+        <h3 className="text-lg font-semibold text-black mb-4">Shop Performance Comparison</h3>
         {shopChartData && <BarChart data={shopChartData} height={300} />}
       </div>
 

@@ -147,12 +147,19 @@ const Transactions = () => {
         itemsWaste: t.itemsWaste
       }));
 
-      await transactionAPI.recordBulk(shopId, { transactions: payload, date: today });
+      await transactionAPI.bulkUpdate(shopId, payload);
       
       toast.success('Transactions saved successfully!');
       
       // Refresh data
       await Promise.all([fetchData(), fetchProduction()]);
+
+      // Notify other parts of the app (e.g., seller dashboard) that transactions were updated
+      try {
+        window.dispatchEvent(new CustomEvent('transactions:updated', { detail: { shopId, date: today } }));
+      } catch (err) {
+        // ignore in environments without CustomEvent
+      }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to save transactions');
     } finally {
@@ -165,66 +172,83 @@ const Transactions = () => {
   }
 
   const shopName = user?.shopId?.name || `Shop ${user?.shopId?.shopNumber}`;
+  const totalTaken = transactions.reduce((sum, t) => sum + t.itemsTaken, 0);
+  const totalSold = getTotalSold();
+  const totalReturned = transactions.reduce((sum, t) => sum + t.itemsReturned, 0);
+  const totalWaste = transactions.reduce((sum, t) => sum + t.itemsWaste, 0);
+  const totalRevenue = getTotalRevenue();
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-secondary-800">
-            Daily Transactions
-          </h1>
-          <p className="text-secondary-500">
-            {shopName} • {new Date(today).toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={fetchData}
-            className="btn btn-secondary flex items-center gap-2"
-            disabled={saving}
-          >
-            <FiRefreshCw className={saving ? 'animate-spin' : ''} />
-            Refresh
-          </button>
-          <button
-            onClick={handleSave}
-            className="btn btn-primary flex items-center gap-2"
-            disabled={saving || Object.keys(errors).length > 0}
-          >
-            <FiSave />
-            {saving ? 'Saving...' : 'Save All'}
-          </button>
-        </div>
-      </div>
-
-      {/* Instructions */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex gap-3">
-          <FiPackage className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+      <div className="card bg-black text-white border-black relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(250,204,21,0.35),_transparent_35%)]" />
+        <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-blue-800 font-medium">How to record transactions:</p>
-            <ul className="text-sm text-blue-700 mt-1 space-y-1">
-              <li>1. Enter the number of items you're taking from central stock</li>
-              <li>2. Throughout the day, update items sold, returned, and waste</li>
-              <li>3. Click "Save All" to record your transactions</li>
-              <li>4. Remaining items = Taken - Sold - Returned - Waste</li>
-            </ul>
+            <p className="text-xs uppercase tracking-[0.35em] text-yellow-300 font-semibold">Seller daily close</p>
+            <h1 className="text-3xl font-bold mt-2">Daily Transactions</h1>
+            <p className="text-white/75 mt-2 max-w-2xl">
+              {shopName} • {new Date(today).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </p>
+          </div>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <button
+              onClick={fetchData}
+              className="btn btn-secondary w-full sm:w-auto"
+              disabled={saving}
+            >
+              <FiRefreshCw className={saving ? 'animate-spin' : ''} />
+              Refresh
+            </button>
+            <button
+              onClick={handleSave}
+              className="btn btn-success w-full sm:w-auto"
+              disabled={saving || Object.keys(errors).length > 0}
+            >
+              <FiSave />
+              {saving ? 'Saving...' : 'Save All'}
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Transactions Table */}
-      <div className="card overflow-hidden">
+      <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-5">
+        <div className="stat-card">
+          <p className="text-xs uppercase tracking-[0.2em] text-black/50 font-semibold">Taken</p>
+          <p className="mt-2 text-3xl font-bold text-black">{totalTaken}</p>
+        </div>
+        <div className="stat-card">
+          <p className="text-xs uppercase tracking-[0.2em] text-black/50 font-semibold">Sold</p>
+          <p className="mt-2 text-3xl font-bold text-black">{totalSold}</p>
+        </div>
+        <div className="stat-card">
+          <p className="text-xs uppercase tracking-[0.2em] text-black/50 font-semibold">Returned</p>
+          <p className="mt-2 text-3xl font-bold text-black">{totalReturned}</p>
+        </div>
+        <div className="stat-card">
+          <p className="text-xs uppercase tracking-[0.2em] text-black/50 font-semibold">Waste</p>
+          <p className="mt-2 text-3xl font-bold text-black">{totalWaste}</p>
+        </div>
+        <div className="stat-card">
+          <p className="text-xs uppercase tracking-[0.2em] text-black/50 font-semibold">Revenue</p>
+          <p className="mt-2 text-3xl font-bold text-black">₹{totalRevenue.toLocaleString()}</p>
+        </div>
+      </div>
+
+      <div className="card border-black/10 p-0 overflow-hidden">
+        <div className="px-6 pt-6 pb-4 border-b border-black/10">
+          <p className="text-xs uppercase tracking-[0.25em] text-black/50 font-semibold">Operational entry</p>
+          <h3 className="text-xl font-bold text-black mt-1">Daily Item Details</h3>
+          <p className="text-sm text-black/60 mt-1">Enter quantities carefully. Save all once the day is reviewed and balanced.</p>
+        </div>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[1100px]">
             <thead>
-              <tr className="bg-secondary-100">
+              <tr className="bg-yellow-50">
                 <th className="table-header">Item</th>
                 <th className="table-header text-center">Price</th>
                 <th className="table-header text-center">Available</th>
@@ -242,16 +266,26 @@ const Transactions = () => {
                 const revenue = calculateRevenue(t);
                 
                 return (
-                  <tr key={t.itemId} className="hover:bg-secondary-50 border-b border-secondary-100">
+                  <tr key={t.itemId} className="hover:bg-yellow-50 transition-colors">
                     <td className="table-cell">
-                      <span className="font-medium text-secondary-800">{t.itemName}</span>
-                    </td>
-                    <td className="table-cell text-center text-secondary-600">
-                      ₹{t.price}
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-black text-yellow-400 flex items-center justify-center border border-black shadow-sm">
+                          <FiPackage className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <span className="font-semibold text-black">{t.itemName}</span>
+                          <p className="text-xs text-black/50">Central stock: {t.maxAvailable}</p>
+                        </div>
+                      </div>
                     </td>
                     <td className="table-cell text-center">
-                      <span className={`px-2 py-1 rounded text-sm font-medium ${
-                        t.maxAvailable > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      <span className="inline-flex items-center rounded-full border border-black bg-white px-3 py-1 font-semibold text-black shadow-sm">
+                        ₹{t.price}
+                      </span>
+                    </td>
+                    <td className="table-cell text-center">
+                      <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold border shadow-sm ${
+                        t.maxAvailable > 0 ? 'bg-yellow-100 text-black border-black' : 'bg-black text-white border-black'
                       }`}>
                         {t.maxAvailable}
                       </span>
@@ -264,12 +298,12 @@ const Transactions = () => {
                           max={t.maxAvailable}
                           value={t.itemsTaken}
                           onChange={(e) => handleInputChange(t.itemId, 'itemsTaken', e.target.value)}
-                          className={`input w-20 text-center ${
-                            errors[`${t.itemId}-itemsTaken`] ? 'border-red-500' : ''
+                          className={`input w-20 text-center bg-white ${
+                            errors[`${t.itemId}-itemsTaken`] ? 'border-black' : ''
                           }`}
                         />
                         {errors[`${t.itemId}-itemsTaken`] && (
-                          <span className="text-xs text-red-500 mt-1">
+                          <span className="text-xs text-black mt-1">
                             {errors[`${t.itemId}-itemsTaken`]}
                           </span>
                         )}
@@ -284,12 +318,12 @@ const Transactions = () => {
                           value={t.itemsSold}
                           onChange={(e) => handleInputChange(t.itemId, 'itemsSold', e.target.value)}
                           disabled={t.itemsTaken === 0}
-                          className={`input w-20 text-center ${
-                            errors[`${t.itemId}-itemsSold`] ? 'border-red-500' : ''
+                          className={`input w-20 text-center bg-white ${
+                            errors[`${t.itemId}-itemsSold`] ? 'border-black' : ''
                           } ${t.itemsTaken === 0 ? 'bg-secondary-100' : ''}`}
                         />
                         {errors[`${t.itemId}-itemsSold`] && (
-                          <span className="text-xs text-red-500 mt-1">
+                          <span className="text-xs text-black mt-1">
                             {errors[`${t.itemId}-itemsSold`]}
                           </span>
                         )}
@@ -303,12 +337,12 @@ const Transactions = () => {
                           value={t.itemsReturned}
                           onChange={(e) => handleInputChange(t.itemId, 'itemsReturned', e.target.value)}
                           disabled={t.itemsTaken === 0}
-                          className={`input w-20 text-center ${
-                            errors[`${t.itemId}-itemsReturned`] ? 'border-red-500' : ''
+                          className={`input w-20 text-center bg-white ${
+                            errors[`${t.itemId}-itemsReturned`] ? 'border-black' : ''
                           } ${t.itemsTaken === 0 ? 'bg-secondary-100' : ''}`}
                         />
                         {errors[`${t.itemId}-itemsReturned`] && (
-                          <span className="text-xs text-red-500 mt-1">
+                          <span className="text-xs text-black mt-1">
                             {errors[`${t.itemId}-itemsReturned`]}
                           </span>
                         )}
@@ -322,30 +356,30 @@ const Transactions = () => {
                           value={t.itemsWaste}
                           onChange={(e) => handleInputChange(t.itemId, 'itemsWaste', e.target.value)}
                           disabled={t.itemsTaken === 0}
-                          className={`input w-20 text-center ${
-                            errors[`${t.itemId}-itemsWaste`] ? 'border-red-500' : ''
+                          className={`input w-20 text-center bg-white ${
+                            errors[`${t.itemId}-itemsWaste`] ? 'border-black' : ''
                           } ${t.itemsTaken === 0 ? 'bg-secondary-100' : ''}`}
                         />
                         {errors[`${t.itemId}-itemsWaste`] && (
-                          <span className="text-xs text-red-500 mt-1">
+                          <span className="text-xs text-black mt-1">
                             {errors[`${t.itemId}-itemsWaste`]}
                           </span>
                         )}
                       </div>
                     </td>
                     <td className="table-cell text-center">
-                      <span className={`px-3 py-1 rounded font-medium ${
+                      <span className={`inline-flex items-center rounded-full px-3 py-1 font-semibold border shadow-sm ${
                         remaining > 0 
-                          ? 'bg-yellow-100 text-yellow-700' 
+                          ? 'bg-yellow-100 text-black border-black' 
                           : t.itemsTaken > 0 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-secondary-100 text-secondary-500'
+                            ? 'bg-white text-black border-black' 
+                            : 'bg-secondary-100 text-secondary-500 border-secondary-200'
                       }`}>
                         {remaining}
                       </span>
                     </td>
                     <td className="table-cell text-right">
-                      <span className={`font-semibold ${revenue > 0 ? 'text-green-600' : 'text-secondary-400'}`}>
+                      <span className={`font-semibold ${revenue > 0 ? 'text-black' : 'text-black/40'}`}>
                         ₹{revenue.toLocaleString()}
                       </span>
                     </td>
@@ -354,21 +388,21 @@ const Transactions = () => {
               })}
             </tbody>
             <tfoot>
-              <tr className="bg-secondary-100 font-semibold">
+              <tr className="bg-yellow-50 font-semibold">
                 <td className="table-cell" colSpan={4}>Totals</td>
-                <td className="table-cell text-center text-green-600">
+                <td className="table-cell text-center text-black">
                   {getTotalSold()}
                 </td>
                 <td className="table-cell text-center text-yellow-600">
                   {transactions.reduce((sum, t) => sum + t.itemsReturned, 0)}
                 </td>
-                <td className="table-cell text-center text-red-600">
+                <td className="table-cell text-center text-black">
                   {transactions.reduce((sum, t) => sum + t.itemsWaste, 0)}
                 </td>
                 <td className="table-cell text-center">
                   {transactions.reduce((sum, t) => sum + calculateRemaining(t), 0)}
                 </td>
-                <td className="table-cell text-right text-green-600">
+                <td className="table-cell text-right text-black">
                   ₹{getTotalRevenue().toLocaleString()}
                 </td>
               </tr>
@@ -379,12 +413,12 @@ const Transactions = () => {
 
       {/* Validation Errors Summary */}
       {Object.keys(errors).length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-yellow-50 border border-black rounded-2xl p-4 shadow-sm">
           <div className="flex gap-3">
-            <FiAlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+            <FiAlertCircle className="w-5 h-5 text-black flex-shrink-0" />
             <div>
-              <p className="text-red-800 font-medium">Please fix the following errors:</p>
-              <ul className="text-sm text-red-700 mt-1 list-disc list-inside">
+              <p className="text-black font-medium">Please fix the following errors:</p>
+              <ul className="text-sm text-black mt-1 list-disc list-inside">
                 {Object.values(errors).map((error, index) => (
                   <li key={index}>{error}</li>
                 ))}
@@ -395,32 +429,32 @@ const Transactions = () => {
       )}
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-blue-50 rounded-lg p-4 text-center">
-          <p className="text-sm text-blue-600">Items Taken</p>
-          <p className="text-2xl font-bold text-blue-700">
+      {/* <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-lg p-4 text-center border border-black">
+          <p className="text-sm text-black">Items Taken</p>
+          <p className="text-2xl font-bold text-black">
             {transactions.reduce((sum, t) => sum + t.itemsTaken, 0)}
           </p>
         </div>
-        <div className="bg-green-50 rounded-lg p-4 text-center">
-          <p className="text-sm text-green-600">Items Sold</p>
-          <p className="text-2xl font-bold text-green-700">
+        <div className="bg-yellow-50 rounded-lg p-4 text-center border border-black">
+          <p className="text-sm text-black">Items Sold</p>
+          <p className="text-2xl font-bold text-black">
             {getTotalSold()}
           </p>
         </div>
-        <div className="bg-yellow-50 rounded-lg p-4 text-center">
-          <p className="text-sm text-yellow-600">Items Returned</p>
-          <p className="text-2xl font-bold text-yellow-700">
+        <div className="bg-yellow-100 rounded-lg p-4 text-center border border-black">
+          <p className="text-sm text-black">Items Returned</p>
+          <p className="text-2xl font-bold text-black">
             {transactions.reduce((sum, t) => sum + t.itemsReturned, 0)}
           </p>
         </div>
-        <div className="bg-purple-50 rounded-lg p-4 text-center">
-          <p className="text-sm text-purple-600">Total Revenue</p>
-          <p className="text-2xl font-bold text-purple-700">
+        <div className="bg-white rounded-lg p-4 text-center border border-black">
+          <p className="text-sm text-black">Total Revenue</p>
+          <p className="text-2xl font-bold text-black">
             ₹{getTotalRevenue().toLocaleString()}
           </p>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

@@ -85,6 +85,11 @@ export const transactionAPI = {
   updateTransaction: (data) => api.put('/transactions/update', data),
   bulkUpdate: (shopId, transactions) => 
     api.post('/transactions/bulk-update', { shopId, transactions }),
+  recordBulk: (shopId, payload) =>
+    api.post('/transactions/bulk-update', {
+      shopId,
+      transactions: Array.isArray(payload) ? payload : payload?.transactions || []
+    }),
   getAllShopsSummary: (startDate, endDate) => 
     api.get('/transactions/summary', { params: { startDate, endDate } }),
   getShopSummary: (shopId, date) => 

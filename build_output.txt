@@ -1,0 +1,4 @@
+﻿
+> yumyum-client@1.0.0 build
+> vite build
+
